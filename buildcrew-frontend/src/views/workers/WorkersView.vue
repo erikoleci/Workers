@@ -1,0 +1,88 @@
+<template>
+  <v-container fluid>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <h1 class="text-h5">Workers</h1>
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">Add Worker</v-btn>
+    </div>
+
+    <v-text-field
+      v-model="workerStore.query"
+      label="Search workers..."
+      prepend-inner-icon="mdi-magnify"
+      density="comfortable"
+      variant="outlined"
+      class="mb-4"
+      @update:model-value="workerStore.fetchWorkers()"
+    />
+
+    <v-data-table
+      :items="workerStore.items"
+      :loading="workerStore.loading"
+      :headers="headers"
+      item-value="id"
+    >
+      <template #item.payType="{ item }">
+        {{ item.payType === 'daily' ? 'Per Day' : 'Per m²' }}
+      </template>
+
+      <template #item.status="{ item }">
+        <v-chip :color="item.status === 'active' ? 'success' : 'grey'" size="small">
+          {{ item.status }}
+        </v-chip>
+      </template>
+
+      <template #item.actions="{ item }">
+        <v-btn icon="mdi-pencil" variant="text" size="small" @click="openEdit(item)" />
+        <v-btn icon="mdi-delete" variant="text" size="small" color="error" @click="workerStore.deactivateWorker(item.id)" />
+      </template>
+    </v-data-table>
+
+    <WorkerFormDialog
+      v-model="dialogOpen"
+      :worker="selectedWorker"
+      @save="handleSave"
+    />
+  </v-container>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useWorkerStore } from '@/stores/worker.store'
+import type { Worker, WorkerCreatePayload } from '@/types/worker.types'
+import WorkerFormDialog from './WorkerFormDialog.vue'
+
+const workerStore = useWorkerStore()
+const dialogOpen = ref(false)
+const selectedWorker = ref<Worker | null>(null)
+
+const headers = [
+  { title: 'Name', key: 'fullName' },
+  { title: 'Phone', key: 'phone' },
+  { title: 'Position', key: 'position' },
+  { title: 'Pay Type', key: 'payType' },
+  { title: 'Status', key: 'status' },
+  { title: 'Actions', key: 'actions', sortable: false }
+]
+
+onMounted(() => {
+  workerStore.fetchWorkers()
+})
+
+function openCreate() {
+  selectedWorker.value = null
+  dialogOpen.value = true
+}
+
+function openEdit(worker: Worker) {
+  selectedWorker.value = worker
+  dialogOpen.value = true
+}
+
+async function handleSave(payload: WorkerCreatePayload) {
+  if (selectedWorker.value) {
+    await workerStore.updateWorker(selectedWorker.value.id, payload)
+  } else {
+    await workerStore.createWorker(payload)
+  }
+}
+</script>
