@@ -12,14 +12,19 @@
       density="comfortable"
       variant="outlined"
       class="mb-4"
-      @update:model-value="workerStore.fetchWorkers()"
+      @update:model-value="onSearchInput"
     />
 
     <v-data-table
       :items="workerStore.items"
       :loading="workerStore.loading"
       :headers="headers"
+      :items-length="workerStore.total"
+      :items-per-page="workerStore.size"
+      :page="workerStore.page + 1"
       item-value="id"
+      @update:page="onPageChange"
+      @update:items-per-page="onSizeChange"
     >
       <template #item.payType="{ item }">
         {{ item.payType === 'daily' ? 'Per Day' : 'Per m²' }}
@@ -67,6 +72,26 @@ const headers = [
 onMounted(() => {
   workerStore.fetchWorkers()
 })
+
+let searchTimeout: ReturnType<typeof setTimeout> | undefined
+function onSearchInput() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    workerStore.page = 0
+    workerStore.fetchWorkers()
+  }, 350)
+}
+
+function onPageChange(page: number) {
+  workerStore.page = page - 1 // Vuetify is 1-indexed, backend is 0-indexed
+  workerStore.fetchWorkers()
+}
+
+function onSizeChange(size: number) {
+  workerStore.size = size
+  workerStore.page = 0
+  workerStore.fetchWorkers()
+}
 
 function openCreate() {
   selectedWorker.value = null
