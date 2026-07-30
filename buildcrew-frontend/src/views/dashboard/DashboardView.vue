@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useDashboardStore } from '@/stores/dashboard.store'
 import { storeToRefs } from 'pinia'
 import ProductionCard from '@/components/dashboard/ProductionCard.vue'

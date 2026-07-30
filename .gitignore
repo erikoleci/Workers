@@ -5,3 +5,7 @@ dist/
 *.log
 .idea/
 .vscode/
+
+# JWT signing keys — generate locally per environment, never commit
+*.pem
+dev-dist/
