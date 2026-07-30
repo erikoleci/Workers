@@ -1,11 +1,11 @@
 package com.buildcrew.dashboard;
 
 import com.buildcrew.security.TenantContext;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +20,7 @@ public class DashboardService {
     @Inject
     TenantContext tenantContext;
 
+    @Transactional
     public DashboardSummaryDTO getSummary() {
         UUID companyId = tenantContext.getCompanyId();
         DashboardSummaryDTO dto = new DashboardSummaryDTO();
@@ -76,9 +77,11 @@ public class DashboardService {
     @SuppressWarnings("unchecked")
     private List<DashboardSummaryDTO.DelayedProjectDTO> findDelayedProjects(UUID companyId) {
         Query q = em.createNativeQuery(
-                "SELECT id, name, deadline FROM projects " +
-                "WHERE company_id = :companyId AND status = 'delayed' " +
-                "ORDER BY deadline ASC LIMIT 10");
+                "SELECT p.id, p.name, p.deadline, p.total_m2, " +
+                "COALESCE((SELECT SUM(dr.completed_m2) FROM daily_reports dr WHERE dr.project_id = p.id), 0) AS completed " +
+                "FROM projects p " +
+                "WHERE p.company_id = :companyId AND p.status = 'delayed' " +
+                "ORDER BY p.deadline ASC LIMIT 10");
         q.setParameter("companyId", companyId);
         List<Object[]> rows = q.getResultList();
 
@@ -87,6 +90,13 @@ public class DashboardService {
             d.id = r[0].toString();
             d.name = (String) r[1];
             d.deadline = r[2] != null ? r[2].toString() : null;
+
+            BigDecimal totalM2 = (BigDecimal) r[3];
+            BigDecimal completedM2 = (BigDecimal) r[4];
+            d.progressPercent = (totalM2 != null && totalM2.compareTo(BigDecimal.ZERO) > 0)
+                    ? completedM2.multiply(BigDecimal.valueOf(100)).divide(totalM2, 0, java.math.RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
             return d;
         }).toList();
     }

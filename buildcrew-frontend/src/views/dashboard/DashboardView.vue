@@ -39,6 +39,16 @@
               <template #prepend>
                 <v-icon color="error" icon="mdi-alert-circle" />
               </template>
+              <template #append>
+                <v-chip
+                  v-if="p.progressPercent !== null"
+                  size="small"
+                  :color="progressColor(p.progressPercent)"
+                  variant="tonal"
+                >
+                  {{ p.progressPercent }}%
+                </v-chip>
+              </template>
             </v-list-item>
           </v-list>
           <v-card-text v-else class="text-medium-emphasis">No delayed projects.</v-card-text>
@@ -88,5 +98,12 @@ onMounted(() => {
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(value)
+}
+
+// Spec: Green = target reached, Yellow = almost reached, Red = behind schedule
+function progressColor(percent: number) {
+  if (percent >= 100) return 'success'
+  if (percent >= 80) return 'warning'
+  return 'error'
 }
 </script>
