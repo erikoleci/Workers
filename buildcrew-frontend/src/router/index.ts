@@ -27,13 +27,13 @@ const router = createRouter({
           path: 'workers',
           name: 'workers',
           component: () => import('@/views/workers/WorkersView.vue'),
-          meta: { title: 'Workers', roles: ['owner', 'manager'] }
+          meta: { title: 'Workers', roles: ['owner', 'manager', 'crew_leader'] }
         },
         {
           path: 'crews',
           name: 'crews',
           component: () => import('@/views/crews/CrewsView.vue'),
-          meta: { title: 'Crews', roles: ['owner', 'manager'] }
+          meta: { title: 'Crews', roles: ['owner', 'manager', 'crew_leader'] }
         },
         {
           path: 'clients',
