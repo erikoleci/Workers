@@ -1,6 +1,5 @@
 package com.buildcrew.reports;
 
-import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -11,7 +10,6 @@ import java.util.List;
 
 @Path("/api/reports")
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated
 @RolesAllowed({"owner", "manager"})
 public class ReportsResource {
 

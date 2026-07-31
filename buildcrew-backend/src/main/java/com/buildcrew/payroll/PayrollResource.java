@@ -1,7 +1,6 @@
 package com.buildcrew.payroll;
 
 import com.buildcrew.common.dto.PageResponse;
-import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -15,7 +14,6 @@ import java.util.UUID;
 @Path("/api/payroll")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @RolesAllowed({"owner", "manager"})
 public class PayrollResource {
 
