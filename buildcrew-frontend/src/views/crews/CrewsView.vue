@@ -12,10 +12,16 @@
       density="comfortable"
       variant="outlined"
       class="mb-4"
-      @update:model-value="crewStore.fetchCrews()"
+      @update:model-value="onSearchInput"
     />
 
-    <v-row>
+    <v-row v-if="crewStore.loading">
+      <v-col cols="12" class="text-center pa-8">
+        <v-progress-circular indeterminate color="primary" />
+      </v-col>
+    </v-row>
+
+    <v-row v-else>
       <v-col v-for="crew in crewStore.items" :key="crew.id" cols="12" sm="6" md="4">
         <v-card elevation="2" rounded="lg">
           <v-card-title class="d-flex justify-space-between">
@@ -39,7 +45,19 @@
           </v-card-actions>
         </v-card>
       </v-col>
+
+      <v-col v-if="!crewStore.items.length" cols="12" class="text-center text-medium-emphasis pa-8">
+        No crews found.
+      </v-col>
     </v-row>
+
+    <div v-if="totalPages > 1" class="d-flex justify-center mt-4">
+      <v-pagination
+        :model-value="crewStore.page + 1"
+        :length="totalPages"
+        @update:model-value="onPageChange"
+      />
+    </div>
 
     <CrewFormDialog
       v-model="dialogOpen"
@@ -50,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useCrewStore } from '@/stores/crew.store'
 import type { Crew, CrewCreatePayload } from '@/types/crew.types'
 import CrewFormDialog from './CrewFormDialog.vue'
@@ -59,9 +77,25 @@ const crewStore = useCrewStore()
 const dialogOpen = ref(false)
 const selectedCrew = ref<Crew | null>(null)
 
+const totalPages = computed(() => Math.max(1, Math.ceil(crewStore.total / crewStore.size)))
+
 onMounted(() => {
   crewStore.fetchCrews()
 })
+
+let searchTimeout: ReturnType<typeof setTimeout> | undefined
+function onSearchInput() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    crewStore.page = 0
+    crewStore.fetchCrews()
+  }, 350)
+}
+
+function onPageChange(page: number) {
+  crewStore.page = page - 1
+  crewStore.fetchCrews()
+}
 
 function openCreate() {
   selectedCrew.value = null
