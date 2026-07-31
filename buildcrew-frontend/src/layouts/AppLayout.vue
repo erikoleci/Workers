@@ -12,6 +12,7 @@
         <v-list-item to="/workers" prepend-icon="mdi-account-hard-hat" title="Workers" />
         <v-list-item to="/crews" prepend-icon="mdi-account-group" title="Crews" />
         <v-list-item to="/clients" prepend-icon="mdi-briefcase-account" title="Clients" />
+        <v-list-item v-if="authStore.isOwner" to="/users" prepend-icon="mdi-account-plus" title="Team Members" />
       </v-list>
       <template #append>
         <div class="pa-2">

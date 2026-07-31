@@ -8,10 +8,12 @@
 
           <v-select
             v-model="form.leaderId"
-            :items="workerOptions"
-            item-title="fullName"
+            :items="leaderOptions"
+            item-title="name"
             item-value="id"
             label="Crew Leader"
+            hint="Only managers and crew leaders can lead a crew"
+            persistent-hint
             clearable
             class="mb-2"
           />
@@ -41,7 +43,9 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import type { Crew, CrewCreatePayload } from '@/types/crew.types'
 import { workerService } from '@/services/worker.service'
+import { userService } from '@/services/user.service'
 import type { Worker } from '@/types/worker.types'
+import type { AppUser } from '@/types/user.types'
 
 const props = defineProps<{
   modelValue: boolean
@@ -60,6 +64,7 @@ const model = computed({
 
 const isEdit = computed(() => !!props.crew)
 const workerOptions = ref<Worker[]>([])
+const leaderOptions = ref<AppUser[]>([])
 
 const form = ref<CrewCreatePayload>({
   name: '',
@@ -68,8 +73,13 @@ const form = ref<CrewCreatePayload>({
 })
 
 onMounted(async () => {
-  const { data } = await workerService.search({ status: 'active', size: 100 })
-  workerOptions.value = data.items
+  const [workersRes, managersRes, leadersRes] = await Promise.all([
+    workerService.search({ status: 'active', size: 100 }),
+    userService.list('manager'),
+    userService.list('crew_leader')
+  ])
+  workerOptions.value = workersRes.data.items
+  leaderOptions.value = [...managersRes.data, ...leadersRes.data]
 })
 
 watch(

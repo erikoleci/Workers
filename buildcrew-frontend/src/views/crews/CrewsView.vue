@@ -5,6 +5,10 @@
       <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">Add Crew</v-btn>
     </div>
 
+    <v-alert v-if="errorMessage" type="error" density="compact" class="mb-4" closable @click:close="errorMessage = null">
+      {{ errorMessage }}
+    </v-alert>
+
     <v-text-field
       v-model="crewStore.query"
       label="Search crews..."
@@ -76,6 +80,7 @@ import CrewFormDialog from './CrewFormDialog.vue'
 const crewStore = useCrewStore()
 const dialogOpen = ref(false)
 const selectedCrew = ref<Crew | null>(null)
+const errorMessage = ref<string | null>(null)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(crewStore.total / crewStore.size)))
 
@@ -108,10 +113,15 @@ function openEdit(crew: Crew) {
 }
 
 async function handleSave(payload: CrewCreatePayload) {
-  if (selectedCrew.value) {
-    await crewStore.updateCrew(selectedCrew.value.id, payload)
-  } else {
-    await crewStore.createCrew(payload)
+  errorMessage.value = null
+  try {
+    if (selectedCrew.value) {
+      await crewStore.updateCrew(selectedCrew.value.id, payload)
+    } else {
+      await crewStore.createCrew(payload)
+    }
+  } catch (err: any) {
+    errorMessage.value = err?.response?.data?.message ?? 'Could not save crew. Please check the leader/members and try again.'
   }
 }
 </script>
