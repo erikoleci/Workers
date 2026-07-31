@@ -16,7 +16,7 @@ const router = createRouter({
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: '', redirect: (to) => (useAuthStore().isOwner ? '/dashboard' : '/workers') },
+        { path: '', redirect: () => (useAuthStore().isOwner ? '/dashboard' : '/workers') },
         {
           path: 'dashboard',
           name: 'dashboard',
