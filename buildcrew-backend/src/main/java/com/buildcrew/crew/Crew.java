@@ -10,7 +10,6 @@ import java.util.UUID;
 public class Crew extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue
     public UUID id;
 
     @Column(name = "company_id")

@@ -12,7 +12,6 @@ import java.util.UUID;
 public class Payroll extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue
     public UUID id;
 
     @Column(name = "company_id")

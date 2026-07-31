@@ -12,7 +12,6 @@ import java.util.UUID;
 public class Project extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue
     public UUID id;
 
     @Column(name = "company_id")

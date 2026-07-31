@@ -11,7 +11,6 @@ import java.util.UUID;
 public class DailyTarget extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue
     public UUID id;
 
     @Column(name = "project_id")

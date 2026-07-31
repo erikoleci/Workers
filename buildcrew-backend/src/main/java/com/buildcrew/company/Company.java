@@ -10,7 +10,6 @@ import java.util.UUID;
 public class Company extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue
     public UUID id;
 
     public String name;
