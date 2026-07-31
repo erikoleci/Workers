@@ -29,11 +29,12 @@ public class ProjectService {
 
     public PageResponse<ProjectDTO> search(String query, String status, int page, int size) {
         UUID companyId = tenantContext.getCompanyId();
+        UUID restrictToLeaderId = "owner".equals(tenantContext.getRole()) ? null : tenantContext.getUserId();
 
-        List<ProjectDTO> items = projectRepository.search(companyId, query, status, page, size)
+        List<ProjectDTO> items = projectRepository.search(companyId, query, status, restrictToLeaderId, page, size)
                 .stream().map(this::toDTO).toList();
 
-        long total = projectRepository.countSearch(companyId, query, status);
+        long total = projectRepository.countSearch(companyId, query, status, restrictToLeaderId);
         return new PageResponse<>(items, page, size, total);
     }
 
@@ -90,7 +91,20 @@ public class ProjectService {
         if (project == null || !project.companyId.equals(tenantContext.getCompanyId())) {
             throw new NotFoundException("Project not found");
         }
+        if (!"owner".equals(tenantContext.getRole()) && !isLedByCurrentUser(project.assignedCrewId)) {
+            throw new NotFoundException("Project not found");
+        }
         return project;
+    }
+
+    private boolean isLedByCurrentUser(UUID crewId) {
+        if (crewId == null) return false;
+        Number count = (Number) em.createNativeQuery(
+                "SELECT COUNT(*) FROM crews WHERE id = :crewId AND leader_id = :userId")
+                .setParameter("crewId", crewId)
+                .setParameter("userId", tenantContext.getUserId())
+                .getSingleResult();
+        return count.longValue() > 0;
     }
 
     private ProjectDTO toDTO(Project p) {

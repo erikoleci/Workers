@@ -14,7 +14,10 @@ export const workerService = {
   update(id: string, payload: WorkerCreatePayload) {
     return api.put<Worker>(`/api/workers/${id}`, payload)
   },
-  deactivate(id: string) {
+  toggleStatus(id: string) {
+    return api.patch(`/api/workers/${id}/status`)
+  },
+  delete(id: string) {
     return api.delete(`/api/workers/${id}`)
   }
 }

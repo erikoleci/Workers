@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authGuard } from './guards'
+import { useAuthStore } from '@/stores/auth.store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,12 +16,12 @@ const router = createRouter({
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: '', redirect: '/dashboard' },
+        { path: '', redirect: (to) => (useAuthStore().isOwner ? '/dashboard' : '/workers') },
         {
           path: 'dashboard',
           name: 'dashboard',
           component: () => import('@/views/dashboard/DashboardView.vue'),
-          meta: { title: 'Dashboard' }
+          meta: { title: 'Dashboard', roles: ['owner'] }
         },
         {
           path: 'workers',

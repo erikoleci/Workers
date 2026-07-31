@@ -14,7 +14,7 @@ import java.util.UUID;
 @Path("/api/payroll")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({"owner", "manager"})
+@RolesAllowed({"owner"})
 public class PayrollResource {
 
     @Inject

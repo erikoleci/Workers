@@ -7,9 +7,8 @@
 
           <v-form @submit.prevent="handleLogin">
             <v-text-field
-              v-model="email"
-              label="Email"
-              type="email"
+              v-model="identifier"
+              label="Email or Username"
               variant="outlined"
               density="comfortable"
               class="mb-2"
@@ -50,7 +49,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 
-const email = ref('')
+const identifier = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
@@ -62,10 +61,10 @@ async function handleLogin() {
   error.value = ''
   loading.value = true
   try {
-    await authStore.login({ email: email.value, password: password.value })
+    await authStore.login({ identifier: identifier.value, password: password.value })
     router.push('/dashboard')
   } catch (e) {
-    error.value = 'Invalid email or password'
+    error.value = 'Invalid credentials'
   } finally {
     loading.value = false
   }

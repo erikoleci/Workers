@@ -10,7 +10,7 @@ import java.util.List;
 
 @Path("/api/reports")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({"owner", "manager"})
+@RolesAllowed({"owner"})
 public class ReportsResource {
 
     @Inject

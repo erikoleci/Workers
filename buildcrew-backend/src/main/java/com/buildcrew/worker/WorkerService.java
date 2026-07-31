@@ -71,9 +71,15 @@ public class WorkerService {
     }
 
     @Transactional
-    public void deactivate(UUID id) {
+    public void toggleStatus(UUID id) {
         Worker worker = find(id);
-        worker.status = "inactive";
+        worker.status = "active".equals(worker.status) ? "inactive" : "active";
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        Worker worker = find(id);
+        workerRepository.delete(worker);
     }
 
     private Worker find(UUID id) {

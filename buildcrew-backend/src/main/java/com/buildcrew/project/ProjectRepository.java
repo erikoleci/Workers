@@ -12,28 +12,36 @@ import java.util.UUID;
 @ApplicationScoped
 public class ProjectRepository implements PanacheRepositoryBase<Project, UUID> {
 
-    public List<Project> search(UUID companyId, String query, String status, int page, int size) {
+    public List<Project> search(UUID companyId, String query, String status, UUID restrictToLeaderId, int page, int size) {
         StringBuilder jpql = new StringBuilder("companyId = :companyId");
         if (status != null && !status.isBlank()) jpql.append(" and status = :status");
         if (query != null && !query.isBlank()) jpql.append(" and lower(name) like :query");
+        if (restrictToLeaderId != null) {
+            jpql.append(" and assignedCrewId in (select c.id from Crew c where c.leaderId = :leaderId)");
+        }
 
         Parameters params = Parameters.with("companyId", companyId);
         if (status != null && !status.isBlank()) params.and("status", status);
         if (query != null && !query.isBlank()) params.and("query", "%" + query.toLowerCase() + "%");
+        if (restrictToLeaderId != null) params.and("leaderId", restrictToLeaderId);
 
         return find(jpql.toString(), Sort.by("deadline"), params)
                 .page(Page.of(page, size))
                 .list();
     }
 
-    public long countSearch(UUID companyId, String query, String status) {
+    public long countSearch(UUID companyId, String query, String status, UUID restrictToLeaderId) {
         StringBuilder jpql = new StringBuilder("companyId = :companyId");
         if (status != null && !status.isBlank()) jpql.append(" and status = :status");
         if (query != null && !query.isBlank()) jpql.append(" and lower(name) like :query");
+        if (restrictToLeaderId != null) {
+            jpql.append(" and assignedCrewId in (select c.id from Crew c where c.leaderId = :leaderId)");
+        }
 
         Parameters params = Parameters.with("companyId", companyId);
         if (status != null && !status.isBlank()) params.and("status", status);
         if (query != null && !query.isBlank()) params.and("query", "%" + query.toLowerCase() + "%");
+        if (restrictToLeaderId != null) params.and("leaderId", restrictToLeaderId);
 
         return find(jpql.toString(), params).count();
     }

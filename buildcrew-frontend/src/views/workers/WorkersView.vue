@@ -31,14 +31,19 @@
       </template>
 
       <template #item.status="{ item }">
-        <v-chip :color="item.status === 'active' ? 'success' : 'grey'" size="small">
-          {{ item.status }}
-        </v-chip>
+        <v-switch
+          :model-value="item.status === 'active'"
+          color="success"
+          density="compact"
+          hide-details
+          :label="item.status === 'active' ? 'Active' : 'Inactive'"
+          @update:model-value="workerStore.toggleWorkerStatus(item.id)"
+        />
       </template>
 
       <template #item.actions="{ item }">
         <v-btn icon="mdi-pencil" variant="text" size="small" @click="openEdit(item)" />
-        <v-btn icon="mdi-delete" variant="text" size="small" color="error" @click="workerStore.deactivateWorker(item.id)" />
+        <v-btn icon="mdi-delete" variant="text" size="small" color="error" @click="confirmDelete(item)" />
       </template>
     </v-data-table>
 
@@ -108,6 +113,12 @@ async function handleSave(payload: WorkerCreatePayload) {
     await workerStore.updateWorker(selectedWorker.value.id, payload)
   } else {
     await workerStore.createWorker(payload)
+  }
+}
+
+function confirmDelete(worker: Worker) {
+  if (confirm(`Delete ${worker.fullName}? This cannot be undone.`)) {
+    workerStore.deleteWorker(worker.id)
   }
 }
 </script>

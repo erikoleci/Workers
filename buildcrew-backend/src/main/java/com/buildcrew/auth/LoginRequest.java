@@ -1,13 +1,12 @@
 package com.buildcrew.auth;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequest {
 
+    /** Accepts either the user's email OR their username. */
     @NotBlank
-    @Email
-    public String email;
+    public String identifier;
 
     @NotBlank
     public String password;

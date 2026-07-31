@@ -19,6 +19,8 @@ public class User extends PanacheEntityBase {
 
     public String email;
 
+    public String username;
+
     @Column(name = "password_hash")
     public String passwordHash;
 
@@ -33,5 +35,14 @@ public class User extends PanacheEntityBase {
 
     public static User findByEmail(String email) {
         return find("email", email).firstResult();
+    }
+
+    /** Looks up a user by email OR username - whichever the login form's "identifier" field matches. */
+    public static User findByIdentifier(String identifier) {
+        User user = find("email", identifier).firstResult();
+        if (user == null) {
+            user = find("username", identifier).firstResult();
+        }
+        return user;
     }
 }

@@ -49,11 +49,19 @@ public class WorkerResource {
         return workerService.update(id, dto);
     }
 
+    @PATCH
+    @Path("/{id}/status")
+    @RolesAllowed({"owner", "manager"})
+    public Response toggleStatus(@PathParam("id") UUID id) {
+        workerService.toggleStatus(id);
+        return Response.noContent().build();
+    }
+
     @DELETE
     @Path("/{id}")
     @RolesAllowed({"owner", "manager"})
-    public Response deactivate(@PathParam("id") UUID id) {
-        workerService.deactivate(id);
+    public Response delete(@PathParam("id") UUID id) {
+        workerService.delete(id);
         return Response.noContent().build();
     }
 }

@@ -13,6 +13,6 @@ export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
   }
 
   if (to.meta.roles && !(to.meta.roles as string[]).includes(authStore.role ?? '')) {
-    return '/dashboard'
+    return authStore.isOwner ? '/dashboard' : '/workers'
   }
 }

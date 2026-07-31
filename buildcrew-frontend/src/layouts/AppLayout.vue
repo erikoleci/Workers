@@ -8,7 +8,7 @@
       />
       <v-divider />
       <v-list nav density="comfortable">
-        <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="Dashboard" />
+        <v-list-item v-if="authStore.isOwner" to="/dashboard" prepend-icon="mdi-view-dashboard" title="Dashboard" />
         <v-list-item to="/workers" prepend-icon="mdi-account-hard-hat" title="Workers" />
         <v-list-item to="/crews" prepend-icon="mdi-account-group" title="Crews" />
         <v-list-item to="/clients" prepend-icon="mdi-briefcase-account" title="Clients" />

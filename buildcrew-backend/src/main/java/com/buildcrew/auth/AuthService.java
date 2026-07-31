@@ -14,7 +14,7 @@ public class AuthService {
     JwtService jwtService;
 
     public LoginResponse login(LoginRequest request) {
-        User user = User.findByEmail(request.email);
+        User user = User.findByIdentifier(request.identifier);
 
         if (user == null || !"active".equals(user.status)) {
             throw new NotAuthorizedException("Invalid credentials");

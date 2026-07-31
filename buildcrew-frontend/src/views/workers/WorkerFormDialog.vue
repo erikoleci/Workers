@@ -86,6 +86,16 @@ watch(
         pricePerM2: worker.pricePerM2 ?? undefined,
         employmentDate: worker.employmentDate ?? ''
       }
+    } else {
+      form.value = {
+        fullName: '',
+        phone: '',
+        position: '',
+        payType: 'daily',
+        dailySalary: undefined,
+        pricePerM2: undefined,
+        employmentDate: ''
+      }
     }
   },
   { immediate: true }

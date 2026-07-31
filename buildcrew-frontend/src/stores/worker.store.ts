@@ -38,8 +38,13 @@ export const useWorkerStore = defineStore('worker', {
       await this.fetchWorkers()
     },
 
-    async deactivateWorker(id: string) {
-      await workerService.deactivate(id)
+    async toggleWorkerStatus(id: string) {
+      await workerService.toggleStatus(id)
+      await this.fetchWorkers()
+    },
+
+    async deleteWorker(id: string) {
+      await workerService.delete(id)
       await this.fetchWorkers()
     }
   }
