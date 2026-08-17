@@ -90,9 +90,8 @@ public class PayrollService {
             baseAmount = dailySalary != null ? dailySalary.multiply(BigDecimal.valueOf(daysWorked)) : BigDecimal.ZERO;
         } else {
             Query m2Q = em.createNativeQuery(
-                    "SELECT COALESCE(SUM(dr.completed_m2), 0) FROM daily_reports dr " +
-                    "JOIN crew_members cm ON cm.crew_id = dr.crew_id " +
-                    "WHERE cm.worker_id = :workerId AND dr.report_date BETWEEN :start AND :end");
+                    "SELECT COALESCE(SUM(wdr.completed_m2), 0) FROM worker_daily_reports wdr " +
+                    "WHERE wdr.worker_id = :workerId AND wdr.report_date BETWEEN :start AND :end");
             m2Q.setParameter("workerId", workerId);
             m2Q.setParameter("start", dto.periodStart);
             m2Q.setParameter("end", dto.periodEnd);

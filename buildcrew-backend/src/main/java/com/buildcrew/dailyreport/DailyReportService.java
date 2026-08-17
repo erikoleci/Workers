@@ -33,14 +33,31 @@ public class DailyReportService {
     EntityManager em;
 
     public PageResponse<DailyReportDTO> search(String projectId, String crewId, LocalDate from, LocalDate to, int page, int size) {
+        UUID companyId = tenantContext.getCompanyId();
         UUID pId = projectId != null ? UUID.fromString(projectId) : null;
         UUID cId = crewId != null ? UUID.fromString(crewId) : null;
 
-        List<DailyReportDTO> items = dailyReportRepository.search(pId, cId, from, to, page, size)
+        // manager/crew_leader only see reports for crews they lead; owner sees all
+        if (!"owner".equals(tenantContext.getRole())) {
+            UUID myCrewId = myLedCrewId();
+            if (myCrewId == null) {
+                return new PageResponse<>(List.of(), page, size, 0);
+            }
+            cId = myCrewId;
+        }
+
+        List<DailyReportDTO> items = dailyReportRepository.search(companyId, pId, cId, from, to, page, size)
                 .stream().map(this::toDTO).toList();
 
-        long total = dailyReportRepository.countSearch(pId, cId, from, to);
+        long total = dailyReportRepository.countSearch(companyId, pId, cId, from, to);
         return new PageResponse<>(items, page, size, total);
+    }
+
+    private UUID myLedCrewId() {
+        Query q = em.createNativeQuery("SELECT id FROM crews WHERE leader_id = :userId LIMIT 1");
+        q.setParameter("userId", tenantContext.getUserId());
+        List<Object> result = q.getResultList();
+        return result.isEmpty() ? null : (UUID) result.get(0);
     }
 
     @Transactional

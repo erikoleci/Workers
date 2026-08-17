@@ -6,7 +6,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string
   name: string
-  email: string
-  role: 'owner' | 'manager' | 'crew_leader'
+  email: string | null
+  role: 'owner' | 'manager' | 'crew_leader' | 'worker'
   companyId: string
 }

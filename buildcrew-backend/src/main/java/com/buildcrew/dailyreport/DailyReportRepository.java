@@ -13,9 +13,10 @@ import java.util.UUID;
 @ApplicationScoped
 public class DailyReportRepository implements PanacheRepositoryBase<DailyReport, UUID> {
 
-    public List<DailyReport> search(UUID projectId, UUID crewId, LocalDate from, LocalDate to, int page, int size) {
-        StringBuilder jpql = new StringBuilder("1=1");
-        Parameters params = Parameters.with("dummy", 0);
+    public List<DailyReport> search(UUID companyId, UUID projectId, UUID crewId, LocalDate from, LocalDate to, int page, int size) {
+        StringBuilder jpql = new StringBuilder(
+                "projectId in (select p.id from Project p where p.companyId = :companyId)");
+        Parameters params = Parameters.with("companyId", companyId);
 
         if (projectId != null) { jpql.append(" and projectId = :projectId"); params.and("projectId", projectId); }
         if (crewId != null) { jpql.append(" and crewId = :crewId"); params.and("crewId", crewId); }
@@ -27,9 +28,10 @@ public class DailyReportRepository implements PanacheRepositoryBase<DailyReport,
                 .list();
     }
 
-    public long countSearch(UUID projectId, UUID crewId, LocalDate from, LocalDate to) {
-        StringBuilder jpql = new StringBuilder("1=1");
-        Parameters params = Parameters.with("dummy", 0);
+    public long countSearch(UUID companyId, UUID projectId, UUID crewId, LocalDate from, LocalDate to) {
+        StringBuilder jpql = new StringBuilder(
+                "projectId in (select p.id from Project p where p.companyId = :companyId)");
+        Parameters params = Parameters.with("companyId", companyId);
 
         if (projectId != null) { jpql.append(" and projectId = :projectId"); params.and("projectId", projectId); }
         if (crewId != null) { jpql.append(" and crewId = :crewId"); params.and("crewId", crewId); }

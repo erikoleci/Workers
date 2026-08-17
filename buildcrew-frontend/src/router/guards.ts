@@ -1,5 +1,6 @@
 import type { NavigationGuardWithThis } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { landingFor } from './landing'
 
 export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
   const authStore = useAuthStore()
@@ -9,10 +10,10 @@ export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
   }
 
   if (to.path === '/login' && authStore.isAuthenticated) {
-    return '/dashboard'
+    return landingFor(authStore)
   }
 
   if (to.meta.roles && !(to.meta.roles as string[]).includes(authStore.role ?? '')) {
-    return authStore.isOwner ? '/dashboard' : '/workers'
+    return landingFor(authStore)
   }
 }

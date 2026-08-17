@@ -38,8 +38,17 @@ public class Worker extends PanacheEntityBase {
 
     public String status;
 
+    public String username;
+
+    @Column(name = "password_hash")
+    public String passwordHash;
+
     @Column(name = "created_at")
     public OffsetDateTime createdAt;
+
+    public static Worker findByUsername(String username) {
+        return find("username", username).firstResult();
+    }
 
     public static io.quarkus.panache.common.Page pageOf(int page, int size) {
         return io.quarkus.panache.common.Page.of(page, size);

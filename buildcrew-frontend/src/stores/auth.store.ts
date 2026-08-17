@@ -23,7 +23,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: (state) => !!state.token,
     isOwner: (state) => state.role === 'owner',
     isManager: (state) => state.role === 'manager',
-    isCrewLeader: (state) => state.role === 'crew_leader'
+    isCrewLeader: (state) => state.role === 'crew_leader',
+    isWorker: (state) => state.role === 'worker'
   },
 
   actions: {
@@ -38,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('name', data.name)
-      localStorage.setItem('email', data.email)
+      localStorage.setItem('email', data.email ?? '')
       localStorage.setItem('role', data.role)
       localStorage.setItem('companyId', data.companyId)
     },

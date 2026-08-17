@@ -17,6 +17,9 @@ export const workerService = {
   toggleStatus(id: string) {
     return api.patch(`/api/workers/${id}/status`)
   },
+  setCredentials(id: string, username: string, password: string) {
+    return api.put(`/api/workers/${id}/credentials`, { username, password })
+  },
   delete(id: string) {
     return api.delete(`/api/workers/${id}`)
   }

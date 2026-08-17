@@ -2,6 +2,7 @@ package com.buildcrew.worker;
 
 import com.buildcrew.common.dto.PageResponse;
 import com.buildcrew.security.TenantContext;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -80,6 +81,13 @@ public class WorkerService {
     public void delete(UUID id) {
         Worker worker = find(id);
         workerRepository.delete(worker);
+    }
+
+    @Transactional
+    public void setCredentials(UUID id, WorkerCredentialsDTO dto) {
+        Worker worker = find(id);
+        worker.username = dto.username;
+        worker.passwordHash = BcryptUtil.bcryptHash(dto.password);
     }
 
     private Worker find(UUID id) {

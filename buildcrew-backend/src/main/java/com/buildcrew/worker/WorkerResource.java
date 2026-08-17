@@ -57,6 +57,14 @@ public class WorkerResource {
         return Response.noContent().build();
     }
 
+    @PUT
+    @Path("/{id}/credentials")
+    @RolesAllowed({"owner", "manager"})
+    public Response setCredentials(@PathParam("id") UUID id, @Valid WorkerCredentialsDTO dto) {
+        workerService.setCredentials(id, dto);
+        return Response.noContent().build();
+    }
+
     @DELETE
     @Path("/{id}")
     @RolesAllowed({"owner", "manager"})

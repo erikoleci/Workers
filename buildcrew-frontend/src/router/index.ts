@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authGuard } from './guards'
 import { useAuthStore } from '@/stores/auth.store'
+import { landingFor } from './landing'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,11 +13,17 @@ const router = createRouter({
       meta: { title: 'Sign in' }
     },
     {
+      path: '/my-report',
+      name: 'my-report',
+      component: () => import('@/views/workerreport/WorkerReportView.vue'),
+      meta: { title: 'Daily Report', requiresAuth: true, roles: ['worker'] }
+    },
+    {
       path: '/',
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: '', redirect: () => (useAuthStore().isOwner ? '/dashboard' : '/workers') },
+        { path: '', redirect: () => landingFor(useAuthStore()) },
         {
           path: 'dashboard',
           name: 'dashboard',

@@ -43,6 +43,10 @@ export const useWorkerStore = defineStore('worker', {
       await this.fetchWorkers()
     },
 
+    async setWorkerCredentials(id: string, username: string, password: string) {
+      await workerService.setCredentials(id, username, password)
+    },
+
     async deleteWorker(id: string) {
       await workerService.delete(id)
       await this.fetchWorkers()
