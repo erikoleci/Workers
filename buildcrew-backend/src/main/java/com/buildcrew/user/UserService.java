@@ -60,6 +60,15 @@ public class UserService {
         user.status = "inactive";
     }
 
+    @Transactional
+    public void resetPassword(UUID id, String newPassword) {
+        User user = userRepository.findById(id);
+        if (user == null || !user.companyId.equals(tenantContext.getCompanyId())) {
+            throw new NotFoundException("User not found");
+        }
+        user.passwordHash = BcryptUtil.bcryptHash(newPassword);
+    }
+
     private UserDTO toDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.id = user.id.toString();

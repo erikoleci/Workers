@@ -7,8 +7,11 @@ public class ReportDTOs {
     public static class ProductionByWorker {
         public String workerId;
         public String workerName;
+        public String payType;
         public BigDecimal totalM2;
         public long daysWorked;
+        public BigDecimal todayM2;
+        public BigDecimal estimatedPayment;
     }
 
     public static class ProductionByCrew {

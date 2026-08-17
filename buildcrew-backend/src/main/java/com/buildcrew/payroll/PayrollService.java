@@ -26,6 +26,9 @@ public class PayrollService {
     @Inject
     EntityManager em;
 
+    @Inject
+    com.buildcrew.notification.NotificationService notificationService;
+
     public PageResponse<PayrollDTO> search(String status, String workerId, int page, int size) {
         UUID companyId = tenantContext.getCompanyId();
         UUID wId = workerId != null ? UUID.fromString(workerId) : null;
@@ -52,7 +55,15 @@ public class PayrollService {
             workerIds = ((List<Object>) q.getResultList()).stream().map(o -> (UUID) o).toList();
         }
 
-        return workerIds.stream().map(workerId -> generateForWorker(companyId, workerId, dto)).toList();
+        List<PayrollDTO> results = workerIds.stream().map(workerId -> generateForWorker(companyId, workerId, dto)).toList();
+
+        notificationService.notifyCompanyManagers(
+                companyId,
+                "payroll_ready",
+                "Payroll for " + dto.periodStart + " to " + dto.periodEnd + " is ready for review"
+        );
+
+        return results;
     }
 
     private PayrollDTO generateForWorker(UUID companyId, UUID workerId, PayrollGenerateDTO dto) {

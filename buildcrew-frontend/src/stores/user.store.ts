@@ -49,6 +49,16 @@ export const useUserStore = defineStore('user', {
         this.error = extractErrorMessage(err)
         throw err
       }
+    },
+
+    async resetPassword(id: string, newPassword: string) {
+      this.error = null
+      try {
+        await userService.resetPassword(id, newPassword)
+      } catch (err) {
+        this.error = extractErrorMessage(err)
+        throw err
+      }
     }
   }
 })

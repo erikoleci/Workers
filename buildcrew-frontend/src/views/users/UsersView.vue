@@ -37,6 +37,12 @@
               {{ roleLabel(u.role) }}
             </v-chip>
             <v-btn
+              icon="mdi-key"
+              variant="text"
+              size="small"
+              @click="openReset(u)"
+            />
+            <v-btn
               v-if="u.role !== 'owner'"
               icon="mdi-delete"
               variant="text"
@@ -50,20 +56,30 @@
     </v-card>
 
     <UserFormDialog v-model="dialogOpen" />
+    <PasswordResetDialog v-model="resetOpen" :user="selectedUser" />
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user.store'
+import type { AppUser } from '@/types/user.types'
 import UserFormDialog from './UserFormDialog.vue'
+import PasswordResetDialog from './PasswordResetDialog.vue'
 
 const userStore = useUserStore()
 const dialogOpen = ref(false)
+const resetOpen = ref(false)
+const selectedUser = ref<AppUser | null>(null)
 
 onMounted(() => {
   userStore.fetchUsers()
 })
+
+function openReset(user: AppUser) {
+  selectedUser.value = user
+  resetOpen.value = true
+}
 
 function roleLabel(role: string) {
   if (role === 'owner') return 'Owner'

@@ -46,6 +46,48 @@ const router = createRouter({
           name: 'users',
           component: () => import('@/views/users/UsersView.vue'),
           meta: { title: 'Team Members', roles: ['owner'] }
+        },
+        {
+          path: 'projects',
+          name: 'projects',
+          component: () => import('@/views/projects/ProjectsView.vue'),
+          meta: { title: 'Projects', roles: ['owner', 'manager'] }
+        },
+        {
+          path: 'daily-report',
+          name: 'daily-report-submit',
+          component: () => import('@/views/dailyreports/DailyReportSubmitView.vue'),
+          meta: { title: 'Daily Report', roles: ['owner', 'manager', 'crew_leader'] }
+        },
+        {
+          path: 'daily-production',
+          name: 'daily-production',
+          component: () => import('@/views/dailyreports/DailyReportsListView.vue'),
+          meta: { title: 'Daily Production', roles: ['owner', 'manager'] }
+        },
+        {
+          path: 'payroll',
+          name: 'payroll',
+          component: () => import('@/views/payroll/PayrollView.vue'),
+          meta: { title: 'Payroll', roles: ['owner'] }
+        },
+        {
+          path: 'expenses',
+          name: 'expenses',
+          component: () => import('@/views/expenses/ExpensesView.vue'),
+          meta: { title: 'Expenses', roles: ['owner', 'manager'] }
+        },
+        {
+          path: 'daily-targets',
+          name: 'daily-targets',
+          component: () => import('@/views/dailytargets/DailyTargetsView.vue'),
+          meta: { title: 'Daily Targets', roles: ['owner', 'manager'] }
+        },
+        {
+          path: 'reports',
+          name: 'reports',
+          component: () => import('@/views/reports/ReportsView.vue'),
+          meta: { title: 'Reports', roles: ['owner'] }
         }
       ]
     },

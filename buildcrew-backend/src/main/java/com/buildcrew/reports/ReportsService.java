@@ -25,12 +25,16 @@ public class ReportsService {
     public List<ReportDTOs.ProductionByWorker> productionByWorker(LocalDate from, LocalDate to) {
         UUID companyId = tenantContext.getCompanyId();
         Query q = em.createNativeQuery(
-                "SELECT w.id, w.full_name, COALESCE(SUM(dr.completed_m2), 0), COUNT(DISTINCT dr.report_date) " +
+                "SELECT w.id, w.full_name, w.pay_type, w.daily_salary, w.price_per_m2, " +
+                "COALESCE(SUM(dr.completed_m2) FILTER (WHERE dr.report_date BETWEEN :from AND :to), 0) AS period_m2, " +
+                "COUNT(DISTINCT dr.report_date) FILTER (WHERE dr.report_date BETWEEN :from AND :to) AS days_worked, " +
+                "COALESCE(SUM(dr.completed_m2) FILTER (WHERE dr.report_date = CURRENT_DATE), 0) AS today_m2 " +
                 "FROM workers w " +
                 "JOIN crew_members cm ON cm.worker_id = w.id " +
                 "JOIN daily_reports dr ON dr.crew_id = cm.crew_id " +
-                "WHERE w.company_id = :companyId AND dr.report_date BETWEEN :from AND :to " +
-                "GROUP BY w.id, w.full_name ORDER BY w.full_name");
+                "WHERE w.company_id = :companyId " +
+                "GROUP BY w.id, w.full_name, w.pay_type, w.daily_salary, w.price_per_m2 " +
+                "ORDER BY w.full_name");
         q.setParameter("companyId", companyId);
         q.setParameter("from", from);
         q.setParameter("to", to);
@@ -40,8 +44,23 @@ public class ReportsService {
             ReportDTOs.ProductionByWorker dto = new ReportDTOs.ProductionByWorker();
             dto.workerId = r[0].toString();
             dto.workerName = (String) r[1];
-            dto.totalM2 = (BigDecimal) r[2];
-            dto.daysWorked = ((Number) r[3]).longValue();
+            dto.payType = (String) r[2];
+            BigDecimal dailySalary = (BigDecimal) r[3];
+            BigDecimal pricePerM2 = (BigDecimal) r[4];
+            dto.totalM2 = (BigDecimal) r[5];
+            dto.daysWorked = ((Number) r[6]).longValue();
+            dto.todayM2 = (BigDecimal) r[7];
+
+            if ("daily".equals(dto.payType)) {
+                dto.estimatedPayment = dailySalary != null
+                        ? dailySalary.multiply(BigDecimal.valueOf(dto.daysWorked))
+                        : BigDecimal.ZERO;
+            } else {
+                dto.estimatedPayment = pricePerM2 != null
+                        ? pricePerM2.multiply(dto.totalM2)
+                        : BigDecimal.ZERO;
+            }
+
             return dto;
         }).toList();
     }

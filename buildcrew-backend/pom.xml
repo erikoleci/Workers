@@ -76,6 +76,12 @@
             <artifactId>quarkus-smallrye-health</artifactId>
         </dependency>
 
+        <!-- Scheduler (for automated notification checks) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
+
         <!-- OpenAPI / Swagger UI (handy while building the API surface) -->
         <dependency>
             <groupId>io.quarkus</groupId>

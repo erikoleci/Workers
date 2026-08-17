@@ -39,4 +39,12 @@ public class UserResource {
         userService.deactivate(id);
         return Response.noContent().build();
     }
+
+    @PATCH
+    @Path("/{id}/reset-password")
+    @RolesAllowed("owner")
+    public Response resetPassword(@PathParam("id") UUID id, @Valid UserPasswordResetDTO dto) {
+        userService.resetPassword(id, dto.newPassword);
+        return Response.noContent().build();
+    }
 }

@@ -10,5 +10,8 @@ export const userService = {
   },
   deactivate(id: string) {
     return api.delete(`/api/users/${id}`)
+  },
+  resetPassword(id: string, newPassword: string) {
+    return api.patch(`/api/users/${id}/reset-password`, { newPassword })
   }
 }
