@@ -65,6 +65,14 @@ public class WorkerResource {
         return Response.noContent().build();
     }
 
+    @PUT
+    @Path("/{id}/target")
+    @RolesAllowed({"owner", "manager"})
+    public Response setTarget(@PathParam("id") UUID id, @Valid WorkerSetTargetDTO dto) {
+        workerService.setTarget(id, dto.targetDate, dto.targetM2);
+        return Response.noContent().build();
+    }
+
     @DELETE
     @Path("/{id}")
     @RolesAllowed({"owner", "manager"})

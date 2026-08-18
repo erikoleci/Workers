@@ -21,6 +21,9 @@ public class WorkerService {
     @Inject
     TenantContext tenantContext;
 
+    @Inject
+    jakarta.persistence.EntityManager em;
+
     public PageResponse<WorkerDTO> search(String query, String status, int page, int size) {
         UUID companyId = tenantContext.getCompanyId();
 
@@ -88,6 +91,25 @@ public class WorkerService {
         Worker worker = find(id);
         worker.username = dto.username;
         worker.passwordHash = BcryptUtil.bcryptHash(dto.password);
+    }
+
+    @Transactional
+    public void setTarget(UUID id, java.time.LocalDate targetDate, java.math.BigDecimal targetM2) {
+        Worker worker = find(id);
+        if (!"per_m2".equals(worker.payType)) {
+            throw new jakarta.ws.rs.BadRequestException("Only per_m2 workers can have a daily m² target");
+        }
+
+        em.createNativeQuery(
+                "INSERT INTO worker_daily_targets (id, worker_id, target_date, target_m2, set_by) " +
+                "VALUES (:newId, :workerId, :date, :m2, :setBy) " +
+                "ON CONFLICT (worker_id, target_date) DO UPDATE SET target_m2 = :m2")
+                .setParameter("newId", UUID.randomUUID())
+                .setParameter("workerId", id)
+                .setParameter("date", targetDate)
+                .setParameter("m2", targetM2)
+                .setParameter("setBy", tenantContext.getUserId())
+                .executeUpdate();
     }
 
     private Worker find(UUID id) {

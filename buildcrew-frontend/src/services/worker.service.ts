@@ -20,6 +20,9 @@ export const workerService = {
   setCredentials(id: string, username: string, password: string) {
     return api.put(`/api/workers/${id}/credentials`, { username, password })
   },
+  setTarget(id: string, targetDate: string, targetM2: number) {
+    return api.put(`/api/workers/${id}/target`, { targetDate, targetM2 })
+  },
   delete(id: string) {
     return api.delete(`/api/workers/${id}`)
   }

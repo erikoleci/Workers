@@ -47,6 +47,10 @@ export const useWorkerStore = defineStore('worker', {
       await workerService.setCredentials(id, username, password)
     },
 
+    async setWorkerTarget(id: string, targetDate: string, targetM2: number) {
+      await workerService.setTarget(id, targetDate, targetM2)
+    },
+
     async deleteWorker(id: string) {
       await workerService.delete(id)
       await this.fetchWorkers()

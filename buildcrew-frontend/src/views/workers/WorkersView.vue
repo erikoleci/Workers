@@ -43,6 +43,14 @@
 
       <template #item.actions="{ item }">
         <v-btn icon="mdi-key" variant="text" size="small" @click="openCredentials(item)" title="Set login" />
+        <v-btn
+          v-if="item.payType === 'per_m2'"
+          icon="mdi-target"
+          variant="text"
+          size="small"
+          @click="openTarget(item)"
+          title="Set daily target"
+        />
         <v-btn icon="mdi-pencil" variant="text" size="small" @click="openEdit(item)" />
         <v-btn icon="mdi-delete" variant="text" size="small" color="error" @click="confirmDelete(item)" />
       </template>
@@ -58,6 +66,11 @@
       v-model="credentialsDialogOpen"
       :worker="selectedWorker"
     />
+
+    <WorkerTargetDialog
+      v-model="targetDialogOpen"
+      :worker="selectedWorker"
+    />
   </v-container>
 </template>
 
@@ -67,10 +80,12 @@ import { useWorkerStore } from '@/stores/worker.store'
 import type { Worker, WorkerCreatePayload } from '@/types/worker.types'
 import WorkerFormDialog from './WorkerFormDialog.vue'
 import WorkerCredentialsDialog from './WorkerCredentialsDialog.vue'
+import WorkerTargetDialog from './WorkerTargetDialog.vue'
 
 const workerStore = useWorkerStore()
 const dialogOpen = ref(false)
 const credentialsDialogOpen = ref(false)
+const targetDialogOpen = ref(false)
 const selectedWorker = ref<Worker | null>(null)
 
 const headers = [
@@ -119,6 +134,11 @@ function openEdit(worker: Worker) {
 function openCredentials(worker: Worker) {
   selectedWorker.value = worker
   credentialsDialogOpen.value = true
+}
+
+function openTarget(worker: Worker) {
+  selectedWorker.value = worker
+  targetDialogOpen.value = true
 }
 
 async function handleSave(payload: WorkerCreatePayload) {

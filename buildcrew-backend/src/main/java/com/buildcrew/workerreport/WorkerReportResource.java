@@ -19,6 +19,12 @@ public class WorkerReportResource {
     WorkerReportService service;
 
     @GET
+    @Path("/my-context")
+    public WorkerReportDTOs.WorkerContextDTO myContext() {
+        return service.myContext();
+    }
+
+    @GET
     @Path("/my-projects")
     public List<WorkerReportDTOs.ProjectOptionDTO> myProjects() {
         return service.myProjects();

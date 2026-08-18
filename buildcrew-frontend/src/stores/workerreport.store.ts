@@ -3,7 +3,8 @@ import {
   workerReportService,
   type WorkerProjectOption,
   type WorkerReport,
-  type WorkerReportSubmitPayload
+  type WorkerReportSubmitPayload,
+  type WorkerContext
 } from '@/services/workerreport.service'
 
 function extractErrorMessage(err: unknown): string {
@@ -13,6 +14,7 @@ function extractErrorMessage(err: unknown): string {
 
 export const useWorkerReportStore = defineStore('workerReport', {
   state: () => ({
+    context: null as WorkerContext | null,
     projects: [] as WorkerProjectOption[],
     myReports: [] as WorkerReport[],
     loading: false,
@@ -22,6 +24,20 @@ export const useWorkerReportStore = defineStore('workerReport', {
   }),
 
   actions: {
+    async fetchContext() {
+      this.loading = true
+      this.error = null
+      try {
+        const { data } = await workerReportService.myContext()
+        this.context = data
+        this.projects = data.projects
+      } catch (err) {
+        this.error = extractErrorMessage(err)
+      } finally {
+        this.loading = false
+      }
+    },
+
     async fetchProjects() {
       this.loading = true
       this.error = null

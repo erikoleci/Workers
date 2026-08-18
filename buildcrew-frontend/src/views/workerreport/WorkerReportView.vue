@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="pa-4" style="max-width: 480px">
-    <h1 class="text-h5 mb-4">Sot bëra ___ m²</h1>
+    <h1 class="text-h5 mb-4">Raporti Ditor</h1>
 
     <v-alert v-if="store.error" type="error" density="compact" class="mb-4">
       {{ store.error }}
@@ -9,55 +9,66 @@
       Raporti u dërgua me sukses!
     </v-alert>
 
-    <v-card v-if="!store.loading && store.projects.length === 0" class="pa-4 mb-4" color="warning" variant="tonal">
-      S'je i caktuar në asnjë projekt aktiv sot. Kontakto menaxherin.
+    <!-- Daily-pay workers don't log m2 - nothing for them to do here -->
+    <v-card v-if="store.context?.payType === 'daily'" class="pa-4 mb-4" color="info" variant="tonal">
+      Ti paguhesh me ditë pune - s'ke nevojë të shkruash m². Kjo faqe është vetëm për punëtorët që paguhen me metër katror.
     </v-card>
 
-    <v-form v-else @submit.prevent="handleSubmit">
-      <v-select
-        v-model="form.projectId"
-        :items="store.projects"
-        item-title="projectName"
-        item-value="projectId"
-        label="Projekti"
-        variant="outlined"
-        density="comfortable"
-        class="mb-2"
-        required
-      />
-      <v-text-field
-        v-model="form.reportDate"
-        label="Data"
-        type="date"
-        variant="outlined"
-        density="comfortable"
-        class="mb-2"
-        required
-      />
-      <v-text-field
-        v-model.number="form.completedM2"
-        label="m² të kompletuara sot"
-        type="number"
-        min="0"
-        step="0.01"
-        variant="outlined"
-        density="comfortable"
-        class="mb-2"
-        required
-      />
-      <v-textarea
-        v-model="form.comments"
-        label="Shënime (opsionale)"
-        variant="outlined"
-        density="comfortable"
-        rows="2"
-        class="mb-4"
-      />
+    <template v-else>
+      <v-card v-if="store.context?.todayTarget" class="pa-4 mb-4" color="primary" variant="tonal">
+        Target-i yt sot: <strong>{{ store.context.todayTarget.targetM2 }} m²</strong>
+      </v-card>
 
-      <v-btn type="submit" color="primary" block size="large" :loading="store.submitting">
-        Dërgo Raportin
-      </v-btn>
-    </v-form>
+      <v-card v-if="!store.loading && store.projects.length === 0" class="pa-4 mb-4" color="warning" variant="tonal">
+        S'je i caktuar në asnjë projekt aktiv sot. Kontakto menaxherin.
+      </v-card>
+
+      <v-form v-else @submit.prevent="handleSubmit">
+        <v-select
+          v-model="form.projectId"
+          :items="store.projects"
+          item-title="projectName"
+          item-value="projectId"
+          label="Projekti"
+          variant="outlined"
+          density="comfortable"
+          class="mb-2"
+          required
+        />
+        <v-text-field
+          v-model="form.reportDate"
+          label="Data"
+          type="date"
+          variant="outlined"
+          density="comfortable"
+          class="mb-2"
+          required
+        />
+        <v-text-field
+          v-model.number="form.completedM2"
+          label="m² të kompletuara sot"
+          type="number"
+          min="0"
+          step="0.01"
+          variant="outlined"
+          density="comfortable"
+          class="mb-2"
+          required
+        />
+        <v-textarea
+          v-model="form.comments"
+          label="Shënime (opsionale)"
+          variant="outlined"
+          density="comfortable"
+          rows="2"
+          class="mb-4"
+        />
+
+        <v-btn type="submit" color="primary" block size="large" :loading="store.submitting">
+          Dërgo Raportin
+        </v-btn>
+      </v-form>
+    </template>
 
     <v-divider class="my-6" />
 
@@ -88,7 +99,7 @@ const form = reactive({
 })
 
 onMounted(async () => {
-  await store.fetchProjects()
+  await store.fetchContext()
   if (store.projects.length === 1) {
     form.projectId = store.projects[0].projectId
   }

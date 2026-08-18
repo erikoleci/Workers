@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,30 @@ public class WorkerReportService {
 
     @Inject
     EntityManager em;
+
+    /** Everything the worker's own report page needs in one call: pay type, active projects, today's target. */
+    @SuppressWarnings("unchecked")
+    public WorkerReportDTOs.WorkerContextDTO myContext() {
+        UUID workerId = tenantContext.getUserId();
+
+        Query payQ = em.createNativeQuery("SELECT pay_type FROM workers WHERE id = :id");
+        payQ.setParameter("id", workerId);
+        List<Object> payResult = payQ.getResultList();
+
+        WorkerReportDTOs.WorkerContextDTO ctx = new WorkerReportDTOs.WorkerContextDTO();
+        ctx.payType = payResult.isEmpty() ? null : (String) payResult.get(0);
+        ctx.projects = myProjects();
+
+        WorkerDailyTarget target = WorkerDailyTarget.find(workerId, LocalDate.now());
+        if (target != null) {
+            WorkerReportDTOs.TargetDTO t = new WorkerReportDTOs.TargetDTO();
+            t.targetDate = target.targetDate;
+            t.targetM2 = target.targetM2;
+            ctx.todayTarget = t;
+        }
+
+        return ctx;
+    }
 
     /** The active project(s) the logged-in worker's crew is currently assigned to. */
     @SuppressWarnings("unchecked")

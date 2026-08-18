@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class WorkerReportDTOs {
 
@@ -34,5 +35,25 @@ public class WorkerReportDTOs {
         public LocalDate reportDate;
         public BigDecimal completedM2;
         public String comments;
+    }
+
+    public static class SetTargetDTO {
+        @NotNull
+        public LocalDate targetDate;
+
+        @NotNull
+        @DecimalMin(value = "0", inclusive = true)
+        public BigDecimal targetM2;
+    }
+
+    public static class TargetDTO {
+        public LocalDate targetDate;
+        public BigDecimal targetM2;
+    }
+
+    public static class WorkerContextDTO {
+        public String payType; // "daily" or "per_m2"
+        public List<ProjectOptionDTO> projects;
+        public TargetDTO todayTarget; // null if none set
     }
 }
