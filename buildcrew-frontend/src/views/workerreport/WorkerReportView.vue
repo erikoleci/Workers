@@ -1,6 +1,10 @@
 <template>
   <v-container fluid class="pa-4" style="max-width: 480px">
-    <h1 class="text-h5 mb-4">Raporti Ditor</h1>
+    <div class="d-flex align-center justify-space-between mb-4">
+      <h1 class="text-h5">Raporti Ditor</h1>
+      <v-btn variant="text" color="error" icon="mdi-logout" @click="handleLogout" title="Dil" />
+    </div>
+    <div v-if="authStore.name" class="text-caption text-medium-emphasis mb-4">{{ authStore.name }}</div>
 
     <v-alert v-if="store.error" type="error" density="compact" class="mb-4">
       {{ store.error }}
@@ -87,9 +91,18 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { useWorkerReportStore } from '@/stores/workerreport.store'
+import { useAuthStore } from '@/stores/auth.store'
 
 const store = useWorkerReportStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
+}
 
 const form = reactive({
   projectId: '',
