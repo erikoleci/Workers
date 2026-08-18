@@ -43,6 +43,11 @@ public class NotificationScheduler {
                 "AND NOT EXISTS (" +
                 "  SELECT 1 FROM daily_reports dr " +
                 "  WHERE dr.crew_id = c.id AND dr.report_date = CURRENT_DATE" +
+                ") " +
+                "AND NOT EXISTS (" +
+                "  SELECT 1 FROM worker_daily_reports wdr " +
+                "  JOIN crew_members cm ON cm.worker_id = wdr.worker_id " +
+                "  WHERE cm.crew_id = c.id AND wdr.project_id = p.id AND wdr.report_date = CURRENT_DATE" +
                 ")");
 
         List<Object[]> rows = q.getResultList();
