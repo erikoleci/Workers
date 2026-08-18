@@ -2,6 +2,11 @@
   <v-container fluid>
     <h1 class="text-h5 mb-4">Daily Production</h1>
 
+    <v-alert type="info" density="compact" variant="tonal" class="mb-4">
+      Kjo listë tregon raportet e dërguara nga crew leader-i për ekipin.
+      Për totalet e kombinuara (përfshi raportet individuale të punëtorëve), shiko faqen Reports.
+    </v-alert>
+
     <v-alert v-if="dailyReportStore.error" type="error" density="compact" class="mb-4">
       {{ dailyReportStore.error }}
     </v-alert>
