@@ -149,9 +149,12 @@ async function handleSave(payload: WorkerCreatePayload) {
   }
 }
 
-function confirmDelete(worker: Worker) {
-  if (confirm(`Delete ${worker.fullName}? This cannot be undone.`)) {
-    workerStore.deleteWorker(worker.id)
+async function confirmDelete(worker: Worker) {
+  if (!confirm(`Delete ${worker.fullName}? This cannot be undone.`)) return
+  try {
+    await workerStore.deleteWorker(worker.id)
+  } catch (e: any) {
+    alert(e.response?.data?.message ?? 'Failed to delete worker.')
   }
 }
 </script>

@@ -139,7 +139,10 @@ public class ProjectService {
 
     private BigDecimal sumCompletedM2(UUID projectId) {
         Query q = em.createNativeQuery(
-                "SELECT COALESCE(SUM(completed_m2), 0) FROM daily_reports WHERE project_id = :projectId");
+                "SELECT COALESCE((SELECT SUM(completed_m2) FROM daily_reports WHERE project_id = :projectId), 0) + " +
+                "COALESCE((SELECT SUM(wdr.completed_m2) FROM worker_daily_reports wdr WHERE wdr.project_id = :projectId " +
+                "  AND NOT EXISTS (SELECT 1 FROM daily_reports dr2 WHERE dr2.project_id = :projectId AND dr2.report_date = wdr.report_date)" +
+                "), 0)");
         q.setParameter("projectId", projectId);
         return (BigDecimal) q.getSingleResult();
     }

@@ -83,7 +83,26 @@ public class WorkerService {
     @Transactional
     public void delete(UUID id) {
         Worker worker = find(id);
+
+        if (hasHistory(id)) {
+            throw new jakarta.ws.rs.BadRequestException(
+                    "This worker has payroll or report history - deleting would permanently erase it. " +
+                    "Use the active/inactive switch instead to keep the records.");
+        }
+
         workerRepository.delete(worker);
+    }
+
+    private boolean hasHistory(UUID workerId) {
+        Number payrollCount = (Number) em.createNativeQuery(
+                "SELECT COUNT(*) FROM payroll WHERE worker_id = :id")
+                .setParameter("id", workerId).getSingleResult();
+        if (payrollCount.longValue() > 0) return true;
+
+        Number reportCount = (Number) em.createNativeQuery(
+                "SELECT COUNT(*) FROM worker_daily_reports WHERE worker_id = :id")
+                .setParameter("id", workerId).getSingleResult();
+        return reportCount.longValue() > 0;
     }
 
     @Transactional

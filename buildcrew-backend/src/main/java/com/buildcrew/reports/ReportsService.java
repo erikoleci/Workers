@@ -26,14 +26,17 @@ public class ReportsService {
         UUID companyId = tenantContext.getCompanyId();
         Query q = em.createNativeQuery(
                 "SELECT w.id, w.full_name, w.pay_type, w.daily_salary, w.price_per_m2, " +
-                "COALESCE(SUM(dr.completed_m2) FILTER (WHERE dr.report_date BETWEEN :from AND :to), 0) AS period_m2, " +
-                "COUNT(DISTINCT dr.report_date) FILTER (WHERE dr.report_date BETWEEN :from AND :to) AS days_worked, " +
-                "COALESCE(SUM(dr.completed_m2) FILTER (WHERE dr.report_date = CURRENT_DATE), 0) AS today_m2 " +
+                // per_m2 workers: their own individually-reported m2 (no double-counting)
+                "COALESCE((SELECT SUM(wdr.completed_m2) FROM worker_daily_reports wdr " +
+                "  WHERE wdr.worker_id = w.id AND wdr.report_date BETWEEN :from AND :to), 0) AS period_m2, " +
+                // daily-pay workers: days_worked = distinct days their crew filed a report (attendance proxy)
+                "COALESCE((SELECT COUNT(DISTINCT dr.report_date) FROM daily_reports dr " +
+                "  JOIN crew_members cm ON cm.crew_id = dr.crew_id " +
+                "  WHERE cm.worker_id = w.id AND dr.report_date BETWEEN :from AND :to), 0) AS days_worked, " +
+                "COALESCE((SELECT SUM(wdr.completed_m2) FROM worker_daily_reports wdr " +
+                "  WHERE wdr.worker_id = w.id AND wdr.report_date = CURRENT_DATE), 0) AS today_m2 " +
                 "FROM workers w " +
-                "JOIN crew_members cm ON cm.worker_id = w.id " +
-                "JOIN daily_reports dr ON dr.crew_id = cm.crew_id " +
                 "WHERE w.company_id = :companyId " +
-                "GROUP BY w.id, w.full_name, w.pay_type, w.daily_salary, w.price_per_m2 " +
                 "ORDER BY w.full_name");
         q.setParameter("companyId", companyId);
         q.setParameter("from", from);
@@ -94,7 +97,10 @@ public class ReportsService {
         UUID companyId = tenantContext.getCompanyId();
         Query q = em.createNativeQuery(
                 "SELECT p.id, p.name, p.total_m2, " +
-                "COALESCE((SELECT SUM(dr.completed_m2) FROM daily_reports dr WHERE dr.project_id = p.id), 0) " +
+                "COALESCE((SELECT SUM(dr.completed_m2) FROM daily_reports dr WHERE dr.project_id = p.id), 0) + " +
+                "COALESCE((SELECT SUM(wdr.completed_m2) FROM worker_daily_reports wdr WHERE wdr.project_id = p.id " +
+                "  AND NOT EXISTS (SELECT 1 FROM daily_reports dr2 WHERE dr2.project_id = p.id AND dr2.report_date = wdr.report_date)" +
+                "), 0) " +
                 "FROM projects p WHERE p.company_id = :companyId ORDER BY p.name");
         q.setParameter("companyId", companyId);
 
@@ -116,11 +122,19 @@ public class ReportsService {
     public List<ReportDTOs.MonthlyProduction> monthlyProduction(int months) {
         UUID companyId = tenantContext.getCompanyId();
         Query q = em.createNativeQuery(
-                "SELECT to_char(date_trunc('month', dr.report_date), 'YYYY-MM') AS month, " +
-                "COALESCE(SUM(dr.completed_m2), 0) " +
-                "FROM daily_reports dr JOIN projects p ON p.id = dr.project_id " +
+                "WITH crew_side AS (" +
+                "  SELECT project_id, report_date, SUM(completed_m2) AS m2 FROM daily_reports GROUP BY project_id, report_date" +
+                "), worker_side AS (" +
+                "  SELECT project_id, report_date, SUM(completed_m2) AS m2 FROM worker_daily_reports GROUP BY project_id, report_date" +
+                "), per_day AS (" +
+                "  SELECT project_id, report_date, GREATEST(COALESCE(c.m2,0), COALESCE(w.m2,0)) AS m2 " +
+                "  FROM crew_side c FULL OUTER JOIN worker_side w USING (project_id, report_date)" +
+                ") " +
+                "SELECT to_char(date_trunc('month', pd.report_date), 'YYYY-MM') AS month, " +
+                "COALESCE(SUM(pd.m2), 0) " +
+                "FROM per_day pd JOIN projects p ON p.id = pd.project_id " +
                 "WHERE p.company_id = :companyId " +
-                "AND dr.report_date >= CURRENT_DATE - (:months || ' months')::interval " +
+                "AND pd.report_date >= CURRENT_DATE - (:months || ' months')::interval " +
                 "GROUP BY month ORDER BY month");
         q.setParameter("companyId", companyId);
         q.setParameter("months", months);

@@ -51,9 +51,17 @@ public class DashboardService {
 
     private BigDecimal sumProduction(UUID companyId, String sinceExpr) {
         Query q = em.createNativeQuery(
-                "SELECT COALESCE(SUM(dr.completed_m2), 0) FROM daily_reports dr " +
-                "JOIN projects p ON p.id = dr.project_id " +
-                "WHERE p.company_id = :companyId AND dr.report_date >= " + sinceExpr);
+                "WITH crew_side AS (" +
+                "  SELECT project_id, report_date, SUM(completed_m2) AS m2 FROM daily_reports GROUP BY project_id, report_date" +
+                "), worker_side AS (" +
+                "  SELECT project_id, report_date, SUM(completed_m2) AS m2 FROM worker_daily_reports GROUP BY project_id, report_date" +
+                "), per_day AS (" +
+                "  SELECT project_id, report_date, GREATEST(COALESCE(c.m2,0), COALESCE(w.m2,0)) AS m2 " +
+                "  FROM crew_side c FULL OUTER JOIN worker_side w USING (project_id, report_date)" +
+                ") " +
+                "SELECT COALESCE(SUM(pd.m2), 0) FROM per_day pd " +
+                "JOIN projects p ON p.id = pd.project_id " +
+                "WHERE p.company_id = :companyId AND pd.report_date >= " + sinceExpr);
         q.setParameter("companyId", companyId);
         return (BigDecimal) q.getSingleResult();
     }
@@ -78,7 +86,10 @@ public class DashboardService {
     private List<DashboardSummaryDTO.DelayedProjectDTO> findDelayedProjects(UUID companyId) {
         Query q = em.createNativeQuery(
                 "SELECT p.id, p.name, p.deadline, p.total_m2, " +
-                "COALESCE((SELECT SUM(dr.completed_m2) FROM daily_reports dr WHERE dr.project_id = p.id), 0) AS completed " +
+                "COALESCE((SELECT SUM(dr.completed_m2) FROM daily_reports dr WHERE dr.project_id = p.id), 0) + " +
+                "COALESCE((SELECT SUM(wdr.completed_m2) FROM worker_daily_reports wdr WHERE wdr.project_id = p.id " +
+                "  AND NOT EXISTS (SELECT 1 FROM daily_reports dr2 WHERE dr2.project_id = p.id AND dr2.report_date = wdr.report_date)" +
+                "), 0) AS completed " +
                 "FROM projects p " +
                 "WHERE p.company_id = :companyId AND p.status = 'delayed' " +
                 "ORDER BY p.deadline ASC LIMIT 10");
